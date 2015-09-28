@@ -3,10 +3,10 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
-  <title>GameOfKings</title>
+  <title>gameofkings</title>
   <script src="./lib/quintus.js"></script>
   <script src="./lib/quintus_sprites.js"></script>
   <script src="./lib/quintus_scenes.js"></script>
@@ -15,15 +15,27 @@
   <script src="./lib/quintus_2d.js"></script>
   <script src="./lib/quintus_touch.js"></script>
   <script src="./lib/quintus_ui.js"></script>
-  <script src="./lib/platformer.js"></script>
+  <script src='/lib/quintus_tmx.js'></script>
+  <script src='/lib/quintus_audio.js'></script>
+  <script src="./gameofkings.js"></script>
   <style> 
-    body { padding:0px; margin:0px; } 
+    body { padding:0px; margin:0px; background-color: #232c34; } 
+    #ui {
+        position: absolute;
+        width: 590px;
+        height: 426px;
+        border: 1px solid #232c34; /*To show the boundaries of the element*/
+        background-image: url("images/ui.png");
+        top:0px;
+    }
   </style>
+<link rel="stylesheet" href="assets/style.css" />
 </head>
-<body style="padding: 0px; margin: 0px;">
-  <div id="quintus_container" style="width: 1916px; margin: 0px auto; position: relative;">
-    <canvas width="1916" height="459" id="quintus" tabindex="0" style="height: 459px; width: 1916px; position: relative; outline: 0px;">
-    </canvas>
+<body>
+  <div id='loading'>
+    <div id='loading_container'>
+      <div id='loading_progress'><span>loading...</span></div>
+    </div>
   </div>
 </body>
 </html>
