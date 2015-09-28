@@ -84,7 +84,7 @@ Q.Sprite.extend("Player",{
   },
 
   resetLevel: function() {
-    Q.stageScene("level1");
+    Q.stageScene("forest1");
     this.p.strength = 100;
     this.animate({opacity: 1});
     Q.stageScene('hud', 3, this.p);
@@ -382,10 +382,11 @@ Q.Collectable.extend("Heart", {
   }
 });
 
-Q.scene("level1",function(stage) {
-  Q.stageTMX("level1.tmx",stage);
+Q.scene("forest1",function(stage) {
+  Q.stageTMX("forest1.tmx",stage);
 
   stage.add("viewport").follow(Q("Player").first());
+  stage.viewport.scale = 0.5;
 });
 
 Q.scene('hud',function(stage) {
@@ -402,16 +403,16 @@ Q.scene('hud',function(stage) {
   container.fit(20);
 });
 
-Q.loadTMX("level1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, jump.mp3, heart.mp3, hit.mp3, coin.mp3, player.json, player.png", function() {
+Q.loadTMX("forest1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, jump.mp3, heart.mp3, hit.mp3, coin.mp3, player.json, player.png", function() {
     Q.compileSheets("player.png","player.json");
-    Q.compileSheets("collectables.png","collectables.json");
-    Q.compileSheets("enemies.png","enemies.json");
-    Q.compileSheets("doors.png","doors.json");
+    //Q.compileSheets("collectables.png","collectables.json");
+    //Q.compileSheets("enemies.png","enemies.json");
+    //Q.compileSheets("doors.png","doors.json");
     Q.animations("player", {
       walk_right: { frames: [1,2,3,4,5,6,6,5,4,3,2,1], rate: 1/15, flip: false, loop: true },
       walk_left: { frames:  [1,2,3,4,5,6,6,5,4,3,2,1], rate: 1/15, flip:"x", loop: true },
-      jump_right: { frames: [0], rate: 1/10, flip: false },
-      jump_left: { frames:  [0], rate: 1/10, flip: "x" },
+      jump_right: { frames: [2], rate: 1/10, flip: false },
+      jump_left: { frames:  [2], rate: 1/10, flip: "x" },
       stand_right: { frames:[0], rate: 1/10, flip: false },
       stand_left: { frames: [0], rate: 1/10, flip:"x" },
       duck_right: { frames: [0], rate: 1/10, flip: false },
@@ -422,12 +423,12 @@ Q.loadTMX("level1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, ju
       walk: { frames: [0,1], rate: 1/3, loop: true },
       dead: { frames: [2], rate: 1/10 }
     };
-    Q.animations("fly", EnemyAnimations);
-    Q.animations("slime", EnemyAnimations);
-    Q.animations("snail", EnemyAnimations);
-    Q.stageScene("level1");
+    //Q.animations("fly", EnemyAnimations);
+    //Q.animations("slime", EnemyAnimations);
+    //Q.animations("snail", EnemyAnimations);
+    Q.stageScene("forest1");
     Q.stageScene('hud', 3, Q('Player').first().p);
-    Q.debug = true;
+    //Q.debug = true;
   
 }, {
   progressCallback: function(loaded,total) {
