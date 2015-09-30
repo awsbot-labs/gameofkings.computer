@@ -18,24 +18,27 @@
   <script src='/lib/quintus_tmx.js'></script>
   <script src='/lib/quintus_audio.js'></script>
   <script src="./gameofkings.js"></script>
+  <link rel="stylesheet" href="assets/style.css" />
   <style> 
-    body { padding:0px; margin:0px; background-color: #232c34; } 
+    body {
+        background-color: #232c34;
+    }
     #ui {
-        position: absolute;
-        width: 590px;
-        height: 426px;
-        border: 1px solid #232c34; /*To show the boundaries of the element*/
-        background-image: url("images/ui.png");
-        top:0px;
+      background-image: url("images/ui.png");
+      z-index:4;
+      height:425px;
+      width:590px;
+    }
+    #quintus-container {
+      z-index:1;
     }
   </style>
-<link rel="stylesheet" href="assets/style.css" />
 </head>
-<body>
-  <div id='loading'>
-    <div id='loading_container'>
-      <div id='loading_progress'><span>loading...</span></div>
+<body style="background-color:#232c34;">
+    <div id='loading'>
+      <div id='loading_container'>
+        <div id='loading_progress'></div>
+      </div>
     </div>
-  </div>
 </body>
 </html>

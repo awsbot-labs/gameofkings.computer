@@ -14,8 +14,15 @@ window.addEventListener("load",function() {
 // includes the `TileLayer` class as well as the `2d` componet.
 var Q = window.Q = Quintus({audioSupported: [ 'wav','mp3','ogg' ]})
         .include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX, Audio")
-        // Maximize this game to whatever the size of the browser is
-        .setup({ maximize: true })
+        .setup({ maximize: "touch", 
+                 width: 590, 
+                 height: 426,   
+                 upsampleWidth:  420,  // Double the pixel density of the 
+                 upsampleHeight: 320,  // game if the w or h is 420x320
+                 // or smaller (useful for retina phones)
+                 downsampleWidth: 1024, // Halve the pixel density if resolution
+                 downsampleHeight: 768  // is larger than or equal to 1024x768 })
+        })
         // And turn on default input controls and touch input (for UI)
         .controls(true).touch()
         // Enable sounds.
@@ -40,8 +47,10 @@ Q.Sprite.extend("Player",{
       duckingPoints : [ [ -25, 30 ], [-25,-10], [25,-10], [25, 30 ]],
       jumpSpeed: -400,
       speed: 300,
-      strength: 100,
-      score: 0,
+      strength: 99,
+      magic: 0,
+      coins: 0,
+      trophy: 0,
       type: Q.SPRITE_PLAYER,
       collisionMask: Q.SPRITE_DEFAULT | Q.SPRITE_DOOR | Q.SPRITE_COLLECTABLE
     });
@@ -60,10 +69,15 @@ Q.Sprite.extend("Player",{
     Q.input.on("down",this,"checkDoor");
   },
 
+  trophy: function(data) {
+    var enemy = data.enemy;
+    this.p.trophy += 1;
+  },
+
   jump: function(obj) {
     // Only play sound once.
     if (!obj.p.playedJump) {
-      Q.audio.play('jump.mp3');
+      //Q.audio.play('jump.mp3');
       obj.p.playedJump = true;
     }
   },
@@ -84,7 +98,7 @@ Q.Sprite.extend("Player",{
   },
 
   resetLevel: function() {
-    Q.stageScene("forest1");
+    Q.stageScene("level1");
     this.p.strength = 100;
     this.animate({opacity: 1});
     Q.stageScene('hud', 3, this.p);
@@ -282,6 +296,7 @@ Q.Sprite.extend("Enemy", {
 
   die: function(col) {
     if(col.obj.isA("Player")) {
+      col.obj.trigger("trophy", {"enemy":this,"col":col});
       Q.audio.play('coin.mp3');
       this.p.vx=this.p.vy=0;
       this.play('dead');
@@ -296,7 +311,6 @@ Q.Sprite.extend("Enemy", {
 Q.Enemy.extend("Fly", {
 
 });
-
 Q.Enemy.extend("Slime", {
   init: function(p) {
     this._super(p,{
@@ -305,7 +319,6 @@ Q.Enemy.extend("Slime", {
     });
   }
 });
-
 Q.Enemy.extend("Snail", {
   init: function(p) {
     this._super(p,{
@@ -336,10 +349,23 @@ Q.Sprite.extend("Collectable", {
   sensor: function(colObj) {
     // Increment the score.
     if (this.p.amount) {
-      colObj.p.score += this.p.amount;
+      colObj.p.coins += this.p.amount;
       Q.stageScene('hud', 3, colObj.p);
     }
     Q.audio.play('coin.mp3');
+    this.destroy();
+  }
+});
+
+Q.Collectable.extend("Heart", {
+  // When a Heart is hit.
+  sensor: function(colObj) {
+    // Increment the strength.
+    if (this.p.amount) {
+      colObj.p.strength = Math.max(colObj.p.strength + 25, 99);
+      Q.stageScene('hud', 3, colObj.p);
+      Q.audio.play('heart.mp3');
+    }
     this.destroy();
   }
 });
@@ -368,46 +394,93 @@ Q.Sprite.extend("Door", {
     colObj.p.door = this;
   }
 });
-
-Q.Collectable.extend("Heart", {
-  // When a Heart is hit.
-  sensor: function(colObj) {
-    // Increment the strength.
-    if (this.p.amount) {
-      colObj.p.strength = Math.max(colObj.p.strength + 25, 100);
-      Q.stageScene('hud', 3, colObj.p);
-      Q.audio.play('heart.mp3');
-    }
-    this.destroy();
+Q.Sprite.extend("UI.Strength", {
+  init: function(p) {
+    this._super(p,{
+      sheet: p.sprite,
+      type: Q.SPRITE_UI_STRENGTH,
+      collisionMask: Q.SPRITE_NONE,
+      vx: 0,
+      vy: 0,
+      gravity: 0
+    });
+    this.add("animation");
+    //this.on("hit");
   }
 });
 
-Q.scene("forest1",function(stage) {
-  Q.stageTMX("forest1.tmx",stage);
-
+Q.scene("level1",function(stage) {
+  stage.insert(new Q.Repeater({ asset: "background-forest-sky.png", speedX: 0, speedY:0 }));
+  stage.insert(new Q.Repeater({ asset: "background-forest-clouds.png", speedX: 0.04, speedY:0 }));
+  stage.insert(new Q.Repeater({ asset: "background-forest-mountain.png", speedX: 0.1, speedY:0 }));
+  stage.insert(new Q.Repeater({ asset: "background-forest-trees.png", speedX: 0.2, speedY:0 }));
+  stage.insert(new Q.Repeater({ asset: "background-forest-earth.png", speedX: 0.2, speedY:0 }));
+  Q.stageTMX("level1.tmx",stage);
   stage.add("viewport").follow(Q("Player").first());
-  stage.viewport.scale = 0.5;
 });
-
 Q.scene('hud',function(stage) {
-  var container = stage.insert(new Q.UI.Container({
-    x: 50, y: 0
+  
+  var ui = stage.insert(new Q.UI.Container({
+    h:426,
+    w:590,
+    x:0,
+    y:0
   }));
-
-  var label = container.insert(new Q.UI.Text({x:200, y: 20,
-    label: "Score: " + stage.options.score, color: "white" }));
-
-  var strength = container.insert(new Q.UI.Text({x:50, y: 20,
-    label: "Health: " + stage.options.strength + '%', color: "white" }));
-
-  container.fit(20);
+  
+  ui.insert(new Q.Repeater({ asset: "hud.png", repeatX: false, repeatY: false  }));
+  ui.insert(new Q.Repeater({ asset: "ui-strength.png", repeatX: false, repeatY: false  }));
+  ui.insert(new Q.Repeater({ asset: "ui-magic.png", x: 223, repeatX: false, repeatY: false  }));
+  ui.insert(new Q.Repeater({ asset: "ui-score.png", x: 65, repeatX: false, repeatY: false  }));
+  var magic = ui.insert(new Q.UI.Text({
+      x: 550.4, 
+      y: 30.4,
+      label: "" + stage.options.magic, 
+      size: 11,
+      color: "#ffc537" 
+    }
+  ));
+  var strength = ui.insert(new Q.UI.Text({
+      x: 37, 
+      y: 30,
+      label: "" + stage.options.strength, 
+      size: 11,
+      color: "#ffc537" 
+    }
+  ));
+  var coins = ui.insert(new Q.UI.Text({
+      x: 200, 
+      y: 9,
+      label: stage.options.coins + " coins", 
+      size: 12,
+      color: "#ffffd3" 
+    }
+  ));
+  var trophy = ui.insert(new Q.UI.Text({
+      x: 388, 
+      y: 9,
+      label: stage.options.trophy + " trophy", 
+      size: 12,
+      color: "#ffffd3" 
+    }
+  ));
+  
+  var h = new Date();
+  var m = new Date();
+  var time = ui.insert(new Q.UI.Text({
+      x: 293, 
+      y: 9.25,
+      label: ("0" + h.getHours()).slice(-2) + ":" + ("0" + m.getMinutes()).slice(-2), 
+      size: 12,
+      color: "#ffffd3" 
+    }
+  ));
 });
 
-Q.loadTMX("forest1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, jump.mp3, heart.mp3, hit.mp3, coin.mp3, player.json, player.png", function() {
+Q.loadTMX("level1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, jump.mp3, heart.mp3, hit.mp3, coin.mp3, player.json, player.png, hud.png, ui-strength.png, ui-magic.png, ui-score.png, background-forest-sky.png, background-forest-clouds.png, background-forest-mountain.png, background-forest-trees.png, background-forest-earth.png", function() {
     Q.compileSheets("player.png","player.json");
-    //Q.compileSheets("collectables.png","collectables.json");
-    //Q.compileSheets("enemies.png","enemies.json");
-    //Q.compileSheets("doors.png","doors.json");
+    Q.compileSheets("collectables.png","collectables.json");
+    Q.compileSheets("enemies.png","enemies.json");
+    Q.compileSheets("doors.png","doors.json");
     Q.animations("player", {
       walk_right: { frames: [1,2,3,4,5,6,6,5,4,3,2,1], rate: 1/15, flip: false, loop: true },
       walk_left: { frames:  [1,2,3,4,5,6,6,5,4,3,2,1], rate: 1/15, flip:"x", loop: true },
@@ -415,21 +488,20 @@ Q.loadTMX("forest1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, j
       jump_left: { frames:  [2], rate: 1/10, flip: "x" },
       stand_right: { frames:[0], rate: 1/10, flip: false },
       stand_left: { frames: [0], rate: 1/10, flip:"x" },
-      duck_right: { frames: [0], rate: 1/10, flip: false },
-      duck_left: { frames:  [0], rate: 1/10, flip: "x" },
-      climb: { frames:  [0, 0], rate: 1/3, flip: false }
+      duck_right: { frames: [7], rate: 1/10, flip: false },
+      duck_left: { frames:  [7], rate: 1/10, flip: "x" },
+      climb: { frames:  [7, 7], rate: 1/3, flip: false }
     });
     var EnemyAnimations = {
       walk: { frames: [0,1], rate: 1/3, loop: true },
       dead: { frames: [2], rate: 1/10 }
     };
-    //Q.animations("fly", EnemyAnimations);
-    //Q.animations("slime", EnemyAnimations);
-    //Q.animations("snail", EnemyAnimations);
-    Q.stageScene("forest1");
+    Q.animations("fly", EnemyAnimations);
+    Q.animations("slime", EnemyAnimations);
+    Q.animations("snail", EnemyAnimations);
+    Q.stageScene("level1");
     Q.stageScene('hud', 3, Q('Player').first().p);
     //Q.debug = true;
-  
 }, {
   progressCallback: function(loaded,total) {
     var element = document.getElementById("loading_progress");
@@ -439,16 +511,4 @@ Q.loadTMX("forest1.tmx, collectables.json, doors.json, enemies.json, fire.mp3, j
     }
   }
 });
-
-// ## Possible Experimentations:
-// 
-// The are lots of things to try out here.
-// 
-// 1. Modify level.json to change the level around and add in some more enemies.
-// 2. Add in a second level by creating a level2.json and a level2 scene that gets
-//    loaded after level 1 is complete.
-// 3. Add in a title screen
-// 4. Add in a hud and points for jumping on enemies.
-// 5. Add in a `Repeater` behind the TileLayer to create a paralax scrolling effect.
-
 });

@@ -4,26 +4,30 @@ if [ $# -eq 0 ]; then
   echo "e.g. $0 update"
   exit 1
 else
-  # We need a unique "stackname" for CloudFormation,
-  # however CF doesn't accept periods in stack-names
-  # STACK_NAME=`echo $2 | sed -e 's/\./\-/g'`
-  DIR=`pwd`
-  DOMAIN_NAME=`basename "$DIR"`
-  export AWS_DEFAULT_PROFILE=`echo $DOMAIN_NAME | sed -e 's/\./\-/g'`
-
-  # Configures the aws-cli - requires an access key id and secret
-  # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
-  # Run the CF command with our parameters and the template.json
-  if [ "$1" == "create" ]; then
-    aws configure --profile $AWS_DEFAULT_PROFILE
+  if [ "$1" == "server" ]; then
+    python -m SimpleHTTPServer 8000
   else
-    aws s3 sync . s3://$DOMAIN_NAME --exclude ".*"
-  fi
+    # We need a unique "stackname" for CloudFormation,
+    # however CF doesn't accept periods in stack-names
+    # STACK_NAME=`echo $2 | sed -e 's/\./\-/g'`
+    DIR=`pwd`
+    DOMAIN_NAME=`basename "$DIR"`
+    export AWS_DEFAULT_PROFILE=`echo $DOMAIN_NAME | sed -e 's/\./\-/g'`
 
-  # Run the CF command with our parameters and the template.json
-  aws cloudformation $1-stack \
-    --stack-name $AWS_DEFAULT_PROFILE \
-    --template-body file://template.json \
-    --capabilities CAPABILITY_IAM \
-    --parameters ParameterKey=DomainName,ParameterValue=$2
+    # Configures the aws-cli - requires an access key id and secret
+    # http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+    # Run the CF command with our parameters and the template.json
+    if [ "$1" == "create" ]; then
+      aws configure --profile $AWS_DEFAULT_PROFILE
+    else
+      aws s3 sync . s3://$DOMAIN_NAME --exclude ".*"
+    fi
+
+    # Run the CF command with our parameters and the template.json
+    aws cloudformation $1-stack \
+      --stack-name $AWS_DEFAULT_PROFILE \
+      --template-body file://template.json \
+      --capabilities CAPABILITY_IAM \
+      --parameters ParameterKey=DomainName,ParameterValue=$2
+  fi
 fi
