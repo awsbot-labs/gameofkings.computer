@@ -417,6 +417,7 @@ Q.scene("level1",function(stage) {
   stage.insert(new Q.Repeater({ asset: "background-forest-earth.png", speedX: 0.2, speedY:0 }));
   Q.stageTMX("level1.tmx",stage);
   stage.add("viewport").follow(Q("Player").first());
+  stage.viewport.offsetY = 38;
 });
 Q.scene('hud',function(stage) {
   
