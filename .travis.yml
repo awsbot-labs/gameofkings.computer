@@ -5,5 +5,3 @@ before_install:
   - sudo pip install awscli
 script:
   - bash test
-deploy:
-  - bash deploy
