@@ -9,6 +9,7 @@ function abort()
 
 function cleanup()
 {
+  echo " --> Cleanup"
 }
 
 echo "Started at $(date -u +%Y-%m-%dT%H:%M:%S%z)"
