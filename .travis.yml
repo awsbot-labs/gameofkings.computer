@@ -1,0 +1,9 @@
+language: bash
+sudo: required
+before_install:
+  - sudo apt-get install python-pip
+  - sudo pip install awscli
+script:
+  - bash test
+deploy:
+  - bash deploy

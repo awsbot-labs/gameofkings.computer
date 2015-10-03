@@ -1,9 +1,17 @@
 #!/bin/bash
-trap abort EXIT
+export VERSION=`cat VERSION`
 
-abort () {
-  echo " --> Tests failed"
+function abort()
+{
+  echo " *** ERROR $@"
+  exit 1
 }
 
-echo "Running tests, please wait"
-exit 1
+function cleanup()
+{
+}
+
+echo "Started at $(date -u +%Y-%m-%dT%H:%M:%S%z)"
+trap cleanup EXIT
+
+echo " --> Running tests"
