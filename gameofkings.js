@@ -345,6 +345,24 @@ Q.Sprite.extend("Collectable", {
     this.on("sensor");
   },
 
+});
+
+Q.Sprite.extend("Coin", {
+  init: function(p) {
+    this._super(p,{
+      sheet: p.sprite,
+      type: Q.SPRITE_COLLECTABLE,
+      collisionMask: Q.SPRITE_PLAYER,
+      sensor: true,
+      vx: 0,
+      vy: 0,
+      gravity: 0
+    });
+    this.add("animation");
+
+    this.on("sensor");
+  },
+
   // When a Collectable is hit.
   sensor: function(colObj) {
     // Increment the score.
