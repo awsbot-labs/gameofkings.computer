@@ -5,5 +5,5 @@ echo " --> Uploading files to Amazon"
 aws s3 sync . s3://$DOMAIN_NAME --exclude ".*"
 
 echo " --> Checking version=$VERSION deployed"
-curl -s -k http://$DOMAIN_NAME | grep $VERSION > /dev/null 2>&1
+curl -s -k http://$DOMAIN_NAME/$VERSION | grep $VERSION > /dev/null 2>&1
 
